@@ -1,3 +1,7 @@
 # 
 sparsevector/.settings/
 sparsevector/.project
+/classes/
+.settings/
+.classpath
+.project
