@@ -238,10 +238,10 @@ public class SparseVector {
 	 */
 	private void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc){
 		for (Map.Entry<String,Float> entry : vector.divMap.entrySet()){
-			String coordName = entry.getKey();
-			Float coordValue = entry.getValue();
-			Float originValue = this.getCoordValue(coordName);
-			this.setDiv(coordName, (originValue==null)? coordValue: calculateFunc.calculate(originValue,coordValue));
+			String divName = entry.getKey();
+			Float divValue = entry.getValue();
+			Float originValue = this.getCoordValue(divName);
+			this.setDiv(divName, (originValue==null)? divValue: calculateFunc.calculate(originValue,divValue));
 		}
 	}
 	
@@ -277,10 +277,10 @@ public class SparseVector {
 		
 		float product = 0;
 		for (Map.Entry<String,Float> entry : divMap.entrySet()){
-			String coordName = entry.getKey();
-			Float coordValue = entry.getValue();
-			Float coordValue2 = vector.getCoordValue(coordName);
-			product += (coordValue2==null ? 0 : coordValue*coordValue2); 
+			String divName = entry.getKey();
+			Float divValue = entry.getValue();
+			Float divValue2 = vector.getCoordValue(divName);
+			product += (divValue2==null ? 0 : divValue*divValue2); 
 		}
 		return product;
 	}
@@ -393,7 +393,33 @@ public class SparseVector {
 		return dotProduct(vector) / (squareOfLength(false) * vector.squareOfLength(false));
 	}
 	
-	
+	/**
+	 * 杰卡得相似性
+	 * 表达了两个向量维度相似的程度, 等于两个向量维度交集的个数除以并集的个数
+	 * get Jaccard similarity, which shows similarity of divisions, equals count of intersection set divides count of union set
+	 * @param vector - another vector
+	 * @return 维度相似度
+	 * Jaccard similarity [https://en.wikipedia.org/wiki/Jaccard_index]
+	 */
+	public float jaccardSimilarity(SparseVector vector)
+	{
+		if (vector==null){
+			return 0;
+		}
+		int unionCount = divMap.size()+vector.divMap.size();
+		if (unionCount==0){
+			return 0;
+		}
+		
+		int intersectCount = 0;
+		for (Map.Entry<String,Float> entry : divMap.entrySet()){
+			String divName = entry.getKey();
+			if (vector.divMap.containsKey(divName)){
+				intersectCount++;
+			}
+		}
+		return (float)intersectCount / (float)unionCount;
+	}
 	
 	/**
 	 * 求与本向量(点)距离最近的向量(点)
