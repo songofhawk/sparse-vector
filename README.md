@@ -8,7 +8,7 @@
 
 A simple sparse vector library, implements the following operation: norm, plus, minus, numerical multiply, numerical divide and dot product. In addition, this lib offers Euclidean distance, cosine similarity and Jaccard similarity comparison.
 
-The project is derived from a natural language tagging system in [NuanXinLi http://www.nuanxinli.com](a psychological service platform based on mobile Internet). When data size is small, requirement is simple, a machine learning platform or full scientific computing lib seems not necessary, therefor this lib borning.
+The project is derived from a natural language tagging system in [NuanXinLi http://www.nuanxinli.com] (a psychological service platform based on mobile Internet). When data size is small, requirement is simple, a machine learning platform or full scientific computing lib seems not necessary, therefor this lib borning.
 
 Sparse vectors usually has large amount of divisions, from thousands to millions, but most of its division has 0 value. If stores these divisions by an array of a list, space and computing resource using will be huge. In this project, we use a map to store all none-zero divisions, which is a normal HashMap, not thread-safe.
 
