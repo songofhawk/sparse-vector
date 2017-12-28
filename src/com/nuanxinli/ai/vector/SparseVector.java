@@ -32,6 +32,9 @@ public class SparseVector {
 	//长度的平方(这是一个缓存, 由计算方法squareOfLength生成,一旦生成就记录下来,以后不再计算了, 除非向量改变)
 	//the square of length on this vector, which is a cache value 
 	private Float lengthSquareCache;
+	//所有维度值之和(这是一个缓存, 由计算方法sum生成,一旦生成就记录下来,以后不再计算了, 除非向量改变)
+	//the sum on values of all divisions 
+	private Float sumCache;
 
 	//日志记录
 	//for logging
@@ -214,6 +217,22 @@ public class SparseVector {
 	}
 	
 	/**
+	 * 获取指定向量(点)集合的近似图心(几何中心)
+	 * Get the centroid of a collection of vectors, also called as geometric center
+	 * 这是一个重载方法,增加了minRatio参数, 用于忽略哪些占比很小的维度：
+	 * 方法会在合并完成后，计算一下每一个维度值占总值的比例，如果低于给定的minRatio值，就忽略这个维度，以便节省空间，提高效率
+	 * @param vectors 指定向量集合 - the collection of vectors
+	 * @return 几何中心向量 - the centroid
+	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
+	 */
+	public static SparseVector getCentroid(Collection<SparseVector> vectors, Float minRatio)
+	{
+		SparseVector centroid = mergeVectors(vectors, (value1, value2)->value1+value2, minRatio);
+		centroid.divideSelf(vectors.size());
+		return centroid;
+	}
+	
+	/**
 	 * 把本向量和指定向量合并为一个新向量； 如果两者有相同的维度，它们的值会合并，合并方式取决于calculateFunc参数；如果是不同的维度，会直接被复制到结果中
 	 * merge this vector with another one, and return the result as a new vector.
 	 * the result will have union divisions of these 2 vectors. The same divisions will be merged, merging method depends on calculateFunc. 
@@ -225,6 +244,24 @@ public class SparseVector {
 		SparseVector newVector = new SparseVector();
 		newVector.mergeVectorSelf(this, calculateFunc);
 		newVector.mergeVectorSelf(vector, calculateFunc);
+		return newVector;
+	}
+	
+	/**
+	 * 把本向量和指定向量合并为一个新向量； 
+	 * 这是一个重载方法,增加了minRatio参数, 用于忽略哪些占比很小的维度：
+	 * 方法会在合并完成后，计算一下每一个维度值占总值的比例，如果低于给定的minRatio值，就忽略这个维度，以便节省空间，提高效率
+	 * merge this vector with another one, and return the result as a new vector.
+	 * the result will have union divisions of these 2 vectors. The same divisions will be merged, merging method depends on calculateFunc. 
+	 * the different divisions will be copied into result directly.    
+	 * @param vector 指定向量 - another vector
+	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算 - merging method, which is a call back function to handle values from 2 vectors
+	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
+	 */
+	public SparseVector mergeVector(SparseVector vector, DualValueComputer calculateFunc, Float minRatio){
+		SparseVector newVector = new SparseVector();
+		newVector.mergeVectorSelf(this, calculateFunc);
+		newVector.mergeVectorSelf(vector, calculateFunc, minRatio);
 		return newVector;
 	}
 	
@@ -246,6 +283,31 @@ public class SparseVector {
 	}
 	
 	/**
+	 * 把指定向量合并到本向量； 
+	 * 这是一个重载方法,增加了minRatio参数, 用于忽略哪些占比很小的维度：
+	 * 方法会在合并完成后，计算一下每一个维度值占总值的比例，如果低于给定的minRatio值，就忽略这个维度，以便节省空间，提高效率
+	 * merge another vector into this one.
+	 * @param vector 指定向量 - another vector
+	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算 - merging method, which is a call back function to handle values from 2 vectors
+	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
+	 */
+	private void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc, Float minRatio){
+		this.mergeVectorSelf(vector, calculateFunc);
+		cleanSmallDiv(minRatio);
+	}
+
+	//计算一下每一个维度值占总值的比例，删除低于给定minRatio值的维度
+	private void cleanSmallDiv(Float minRatio) {
+		float totalValue = this.sum(true);
+		for ( Entry<String, Float> entry:divMap.entrySet()){
+			Float value = entry.getValue();
+			if (value/totalValue < minRatio){
+				divMap.remove(entry.getKey());
+			}
+		}
+	}
+	
+	/**
 	 * 把一组向量集合合并为一个新的向量
 	 * merge a set of vectors to one vector.
 	 * the result will have union divisions of all vectors in the set. The same divisions will be merged, merging method depends on calculateFunc. 
@@ -260,6 +322,28 @@ public class SparseVector {
 		for (SparseVector vector : vectors){
 			newVector.mergeVectorSelf(vector, calculateFunc);
 		}
+		return newVector;
+	}
+	
+	/**
+	 * 把一组向量集合合并为一个新的向量
+	 * 这是一个重载方法,增加了minRatio参数, 用于忽略哪些占比很小的维度：
+	 * 方法会在合并完成后，计算一下每一个维度值占总值的比例，如果低于给定的minRatio值，就忽略这个维度，以便节省空间，提高效率
+	 * merge a set of vectors to one vector.
+	 * the result will have union divisions of all vectors in the set. The same divisions will be merged, merging method depends on calculateFunc. 
+	 * the different divisions will be copied to the result.    
+	 * @param vectors 向量集合
+	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算
+	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
+	 * @return
+	 */
+	private static SparseVector mergeVectors(Collection<SparseVector> vectors, DualValueComputer calculateFunc, Float minRatio)
+	{
+		SparseVector newVector = new SparseVector();
+		for (SparseVector vector : vectors){
+			newVector.mergeVectorSelf(vector, calculateFunc, minRatio);
+		}
+		newVector.cleanSmallDiv(minRatio);
 		return newVector;
 	}
 	
@@ -316,7 +400,30 @@ public class SparseVector {
 		return newVector.length(false);
 	}
 	
-	
+	/**
+	 * 向量各个维度值的总和
+	 * the sum on values of all divisions
+	 * @param updateCache 是否强制更新缓存 - whether force to update cache
+	 * 如果这个参数为true，表示无论以前是否计算过，强制根据各个维度的值重新计算长度，并写入缓存
+	 * if true, then recalculate the length, and update cache
+	 * 如果这个参数为false，那么会根据是否计算过这个值，来决定从缓存中获取长度，还是根据维度的值来计算长度
+	 * if false, then get value from cache when existing, otherwise recalculate
+	 * @return 维度值的总和 - the sum on values of all divisions
+	 */
+	public float sum(boolean updateCache)
+	{
+		if (!updateCache && sumCache!=null){
+			return sumCache.floatValue();
+		}
+		
+		float sum=0;
+		for (float value:divMap.values()){
+			sum += value;
+		}
+		sumCache = sum;
+		return sum;
+	}
+		
 	/**
 	 * 向量长度(模)的平方
 	 * the square of vector length(norm of vector)
