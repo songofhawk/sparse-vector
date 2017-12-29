@@ -639,6 +639,23 @@ public class SparseVector {
 		}
 	}
 	
+	public String topDivString(int count)
+	{
+		Entry<String,Float>[] topEnties = topDivisions(count);
+		StringBuilder builder= new StringBuilder("{");
+		for (int i=0; i<topEnties.length; i++){
+			Entry<String,Float> entry = topEnties[i];
+			//float weight = columnWeights[i];
+			builder.append(entry.getKey()).append(":").append(entry.getValue());
+			if (i<topEnties.length - 1){
+				builder.append(", ");
+			}
+		}
+		builder.append("}");
+		return builder.toString();
+	}
+	
+	
 	/**
 	 * 寻找数值最大的几个维度的名称
 	 * descending sort all divisions by value, and return names of top x of them 
