@@ -231,7 +231,7 @@ public class SparseVector {
 		centroid.divideSelf(vectors.size());
 		return centroid;
 	}
-	
+	  
 	/**
 	 * 把本向量和指定向量合并为一个新向量； 如果两者有相同的维度，它们的值会合并，合并方式取决于calculateFunc参数；如果是不同的维度，会直接被复制到结果中
 	 * merge this vector with another one, and return the result as a new vector.
