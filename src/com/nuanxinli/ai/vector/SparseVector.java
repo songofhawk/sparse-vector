@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import org.apache.log4j.Logger;
@@ -98,7 +99,7 @@ public class SparseVector {
 	 * @param divName 维度名称 - division name 
 	 * @return 维度值 - division value
 	 */
-	public Float getCoordValue(String divName)
+	public Float getDivValue(String divName)
 	{
 		return divMap.get(divName);
 	}
@@ -273,11 +274,11 @@ public class SparseVector {
 	 * @param vector 指定向量 - another vector
 	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算 - merging method, which is a call back function to handle values from 2 vectors
 	 */
-	private void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc){
+	public void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc){
 		for (Map.Entry<String,Float> entry : vector.divMap.entrySet()){
 			String divName = entry.getKey();
 			Float divValue = entry.getValue();
-			Float originValue = this.getCoordValue(divName);
+			Float originValue = this.getDivValue(divName);
 			this.setDiv(divName, (originValue==null)? divValue: calculateFunc.calculate(originValue,divValue));
 		}
 	}
@@ -291,7 +292,7 @@ public class SparseVector {
 	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算 - merging method, which is a call back function to handle values from 2 vectors
 	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
 	 */
-	private void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc, Float minRatio){
+	public void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc, Float minRatio){
 		this.mergeVectorSelf(vector, calculateFunc);
 		cleanSmallDiv(minRatio);
 	}
@@ -363,7 +364,7 @@ public class SparseVector {
 		for (Map.Entry<String,Float> entry : divMap.entrySet()){
 			String divName = entry.getKey();
 			Float divValue = entry.getValue();
-			Float divValue2 = vector.getCoordValue(divName);
+			Float divValue2 = vector.getDivValue(divName);
 			product += (divValue2==null ? 0 : divValue*divValue2); 
 		}
 		return product;
@@ -715,5 +716,23 @@ public class SparseVector {
 		}
 		return clusteredVectors;
 	}
-
+	
+	/**
+	 * 返回一个规范化后的新向量(方向不变, 长度变为1)
+	 * @return
+	 */
+	public SparseVector normalize()
+	{
+		float len = this.length();
+		if (len==0){
+			throw new RuntimeException("Can not normalize a zero vector!");
+		}
+		return this.divide(len);
+	}
+	
+	public Set<Entry<String, Float>> getEntries()
+	{
+		return divMap.entrySet();
+	}
+	
 }
