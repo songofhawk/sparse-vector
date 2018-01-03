@@ -105,6 +105,25 @@ public class SparseVector {
 	}
 	
 	/**
+	 * 增加某个特定维度的值
+	 * add value to specified division 
+	 * @param divName 维度名称 - division name
+	 * @param addValue 维度要增加的值 - division value to be added
+	 */
+	public void addDiv(String divName, float addValue)
+	{
+		Float oldValue = divMap.get(divName);
+		if (oldValue==null){
+			divMap.put(divName, addValue);
+		}else{
+			divMap.put(divName, oldValue + addValue);
+		}
+		if (lengthSquareCache!=null){
+			squareOfLength(true);
+		}
+	}
+
+	/**
 	 * 本向量与另一个向量相加，返回新向量
 	 * return a new vector, which equals this vector plus another one
 	 * as the count of divisions is not certain, any two vectors can be calculated by this function
