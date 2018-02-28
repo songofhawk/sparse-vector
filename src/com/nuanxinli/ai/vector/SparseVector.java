@@ -754,4 +754,13 @@ public class SparseVector {
 		return divMap.entrySet();
 	}
 	
+	/**
+	 * 删除指定维度
+	 * remove a specified division
+	 * @param divName 待删除的维度名 - the division to be removed
+	 * @return 删除的维度对应的值,如果没有这个维度,则返回null
+	 */
+	public Float removeDiv(String divName){
+		return divMap.remove(divName);
+	}
 }
