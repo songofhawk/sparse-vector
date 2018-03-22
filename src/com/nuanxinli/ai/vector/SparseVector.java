@@ -24,18 +24,18 @@ public class SparseVector {
 	//a callback function, to calculate two values when mergeing vectors
 	@FunctionalInterface
 	public interface DualValueComputer {
-		float calculate(Float divValue1, Float divValue2);
+		double calculate(Double divValue1, Double divValue2);
 	}
 	
 	//用一个map来保存向量各个维度的值(仅不为0的维度才保存)
 	//a map to store values for all divisions, only none-zero value will be stored
-	private Map<String, Float> divMap = new HashMap<>();
+	private Map<String, Double> divMap = new HashMap<>();
 	//长度的平方(这是一个缓存, 由计算方法squareOfLength生成,一旦生成就记录下来,以后不再计算了, 除非向量改变)
 	//the square of length on this vector, which is a cache value 
-	private Float lengthSquareCache;
+	private Double lengthSquareCache;
 	//所有维度值之和(这是一个缓存, 由计算方法sum生成,一旦生成就记录下来,以后不再计算了, 除非向量改变)
 	//the sum on values of all divisions 
-	private Float sumCache;
+	private Double sumCache;
 
 	//日志记录
 	//for logging
@@ -45,13 +45,13 @@ public class SparseVector {
 	 * 初始化向量
 	 * constructor with 2 parameters
 	 * @param divNames 字符数组存储的维度名称 - division names in string array 
-	 * @param divValues 浮点数组存储的维度值 - division values in float array
+	 * @param divValues 浮点数组存储的维度值 - division values in double array
 	 */
-	public SparseVector(String[] divNames, float[] divValues)
+	public SparseVector(String[] divNames, double[] divValues)
 	{
 		for (int i=0; i<divNames.length; i++){
 			String text= divNames[i];
-			float value = divValues[i];
+			double value = divValues[i];
 			divMap.put(text, value);
 		}
 	}
@@ -66,7 +66,7 @@ public class SparseVector {
 	public SparseVector(String[] divNames)
 	{
 		for (String text : divNames){
-			divMap.put(text, 1f);
+			divMap.put(text, 1d);
 		}
 	}
 	
@@ -85,7 +85,7 @@ public class SparseVector {
 	 * @param divName 维度名称 - division name
 	 * @param divValue 维度值 - division value
 	 */
-	public void setDiv(String divName, float divValue)
+	public void setDiv(String divName, double divValue)
 	{
 		divMap.put(divName, divValue);
 		if (lengthSquareCache!=null){
@@ -99,7 +99,7 @@ public class SparseVector {
 	 * @param divName 维度名称 - division name 
 	 * @return 维度值 - division value
 	 */
-	public Float getDivValue(String divName)
+	public Double getDivValue(String divName)
 	{
 		return divMap.get(divName);
 	}
@@ -110,9 +110,9 @@ public class SparseVector {
 	 * @param divName 维度名称 - division name
 	 * @param addValue 维度要增加的值 - division value to be added
 	 */
-	public void addDiv(String divName, float addValue)
+	public void addDiv(String divName, double addValue)
 	{
-		Float oldValue = divMap.get(divName);
+		Double oldValue = divMap.get(divName);
 		if (oldValue==null){
 			divMap.put(divName, addValue);
 		}else{
@@ -175,10 +175,10 @@ public class SparseVector {
 	 * @param factor 乘数 - the constant
 	 * @return 两者之积组成的新向量 - the result vector
 	 */
-	public SparseVector multiply(float factor)
+	public SparseVector multiply(double factor)
 	{
 		SparseVector product = new SparseVector();
-		for (Map.Entry<String,Float> entry : divMap.entrySet()){
+		for (Map.Entry<String,Double> entry : divMap.entrySet()){
 			product.setDiv(entry.getKey(), entry.getValue()*factor);
 		}
 		return product;
@@ -189,9 +189,9 @@ public class SparseVector {
 	 * this vector multiply a constant, this vector will equal the product vector after function called.
 	 * @param factor 乘数 - the constant
 	 */
-	public void multiplySelf(float factor)
+	public void multiplySelf(double factor)
 	{
-		for (Map.Entry<String,Float> entry : divMap.entrySet()){
+		for (Map.Entry<String,Double> entry : divMap.entrySet()){
 			this.setDiv(entry.getKey(), entry.getValue()*factor);
 		}
 	}
@@ -202,10 +202,10 @@ public class SparseVector {
 	 * @param divisor 除数 - divisor
 	 * @return 两者之商组成的新向量 - the quotient vector
 	 */
-	public SparseVector divide(float divisor)
+	public SparseVector divide(double divisor)
 	{
 		SparseVector quotient = new SparseVector();
-		for (Map.Entry<String,Float> entry : divMap.entrySet()){
+		for (Map.Entry<String,Double> entry : divMap.entrySet()){
 			quotient.setDiv(entry.getKey(), entry.getValue()/divisor);
 		}
 		return quotient;
@@ -216,9 +216,9 @@ public class SparseVector {
 	 * this vector divide by a constant, this vector will equal the quotient vector after function called.
 	 * @param factor 除数 - divisor
 	 */
-	public void divideSelf(float divisor)
+	public void divideSelf(double divisor)
 	{
-		for (Map.Entry<String,Float> entry : divMap.entrySet()){
+		for (Map.Entry<String,Double> entry : divMap.entrySet()){
 			this.setDiv(entry.getKey(), entry.getValue()/divisor);
 		}
 	}
@@ -245,7 +245,7 @@ public class SparseVector {
 	 * @return 几何中心向量 - the centroid
 	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
 	 */
-	public static SparseVector getCentroid(Collection<SparseVector> vectors, Float minRatio)
+	public static SparseVector getCentroid(Collection<SparseVector> vectors, Double minRatio)
 	{
 		SparseVector centroid = mergeVectors(vectors, (value1, value2)->value1+value2, minRatio);
 		centroid.divideSelf(vectors.size());
@@ -278,7 +278,7 @@ public class SparseVector {
 	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算 - merging method, which is a call back function to handle values from 2 vectors
 	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
 	 */
-	public SparseVector mergeVector(SparseVector vector, DualValueComputer calculateFunc, Float minRatio){
+	public SparseVector mergeVector(SparseVector vector, DualValueComputer calculateFunc, Double minRatio){
 		SparseVector newVector = new SparseVector();
 		newVector.mergeVectorSelf(this, calculateFunc);
 		newVector.mergeVectorSelf(vector, calculateFunc, minRatio);
@@ -294,10 +294,10 @@ public class SparseVector {
 	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算 - merging method, which is a call back function to handle values from 2 vectors
 	 */
 	public void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc){
-		for (Map.Entry<String,Float> entry : vector.divMap.entrySet()){
+		for (Map.Entry<String,Double> entry : vector.divMap.entrySet()){
 			String divName = entry.getKey();
-			Float divValue = entry.getValue();
-			Float originValue = this.getDivValue(divName);
+			Double divValue = entry.getValue();
+			Double originValue = this.getDivValue(divName);
 			this.setDiv(divName, (originValue==null)? divValue: calculateFunc.calculate(originValue,divValue));
 		}
 	}
@@ -311,16 +311,16 @@ public class SparseVector {
 	 * @param calculateFunc 合并算法，用于表达两个具体的向量维度合并时应该怎样计算 - merging method, which is a call back function to handle values from 2 vectors
 	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
 	 */
-	public void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc, Float minRatio){
+	public void mergeVectorSelf(SparseVector vector, DualValueComputer calculateFunc, Double minRatio){
 		this.mergeVectorSelf(vector, calculateFunc);
 		cleanSmallDiv(minRatio);
 	}
 
 	//计算一下每一个维度值占总值的比例，删除低于给定minRatio值的维度
-	private void cleanSmallDiv(Float minRatio) {
-		float totalValue = this.sum(true);
-		for ( Entry<String, Float> entry:divMap.entrySet()){
-			Float value = entry.getValue();
+	private void cleanSmallDiv(Double minRatio) {
+		double totalValue = this.sum(true);
+		for ( Entry<String, Double> entry:divMap.entrySet()){
+			Double value = entry.getValue();
 			if (value/totalValue < minRatio){
 				divMap.remove(entry.getKey());
 			}
@@ -357,7 +357,7 @@ public class SparseVector {
 	 * @param minRatio 最小比例值，小于这个比例的维度将被删除 - the minimal ratio, all divisions its value ratio lower than this value will be deleted
 	 * @return
 	 */
-	private static SparseVector mergeVectors(Collection<SparseVector> vectors, DualValueComputer calculateFunc, Float minRatio)
+	private static SparseVector mergeVectors(Collection<SparseVector> vectors, DualValueComputer calculateFunc, Double minRatio)
 	{
 		SparseVector newVector = new SparseVector();
 		for (SparseVector vector : vectors){
@@ -373,17 +373,17 @@ public class SparseVector {
 	 * @param vector 指定向量 - another vector
 	 * @return 点积值 - dot product value
 	 */
-	public float dotProduct(SparseVector vector)
+	public double dotProduct(SparseVector vector)
 	{
 		if (vector==null){
 			return 0;
 		}
 		
-		float product = 0;
-		for (Map.Entry<String,Float> entry : divMap.entrySet()){
+		double product = 0;
+		for (Map.Entry<String,Double> entry : divMap.entrySet()){
 			String divName = entry.getKey();
-			Float divValue = entry.getValue();
-			Float divValue2 = vector.getDivValue(divName);
+			Double divValue = entry.getValue();
+			Double divValue2 = vector.getDivValue(divName);
 			product += (divValue2==null ? 0 : divValue*divValue2); 
 		}
 		return product;
@@ -396,7 +396,7 @@ public class SparseVector {
 	 * @param vector 指定向量(如果为空,表示0向量,则返回本向量的长度) - another vector(if is null, than return the square of length of this vector)
 	 * @return 距离的平方 - the square of distance
 	 */
-	public float squareOfDistance(SparseVector vector)
+	public double squareOfDistance(SparseVector vector)
 	{
 		if (vector==null){
 			return this.squareOfLength(false);
@@ -411,7 +411,7 @@ public class SparseVector {
 	 * @param  指定向量(如果为空,表示0向量,则返回本向量的长度) - another vector(if is null, then return the length of this vector)
 	 * @return 距离 - the distance
 	 */
-	public float distance(SparseVector vector)
+	public double distance(SparseVector vector)
 	{
 		if (vector==null){
 			return this.length(false);
@@ -430,14 +430,14 @@ public class SparseVector {
 	 * if false, then get value from cache when existing, otherwise recalculate
 	 * @return 维度值的总和 - the sum on values of all divisions
 	 */
-	public float sum(boolean updateCache)
+	public double sum(boolean updateCache)
 	{
 		if (!updateCache && sumCache!=null){
-			return sumCache.floatValue();
+			return sumCache.doubleValue();
 		}
 		
-		float sum=0;
-		for (float value:divMap.values()){
+		double sum=0;
+		for (double value:divMap.values()){
 			sum += value;
 		}
 		sumCache = sum;
@@ -454,14 +454,14 @@ public class SparseVector {
 	 * if false, then get value from cache when existing, otherwise recalculate
 	 * @return 长度的平方 - the square of vector length
 	 */
-	public float squareOfLength(boolean updateCache)
+	public double squareOfLength(boolean updateCache)
 	{
 		if (!updateCache && lengthSquareCache!=null){
-			return lengthSquareCache.floatValue();
+			return lengthSquareCache.doubleValue();
 		}
 		
-		float sum=0;
-		for (float value:divMap.values()){
+		double sum=0;
+		for (double value:divMap.values()){
 			sum += value*value;
 		}
 		lengthSquareCache = sum;
@@ -473,7 +473,7 @@ public class SparseVector {
 	 * the square of vector length(norm of vector)
 	 * @return 长度的平方 - the square of vector length
 	 */
-	public float squareOfLength()
+	public double squareOfLength()
 	{
 		return squareOfLength(false);
 	}
@@ -488,9 +488,9 @@ public class SparseVector {
 	 * if false, then get value from cache when existing, otherwise recalculate
 	 * @return 长度的平方 - vector length
 	 */
-	public float length(boolean updateCache)
+	public double length(boolean updateCache)
 	{
-		return (float) Math.sqrt(squareOfLength(updateCache));
+		return Math.sqrt(squareOfLength(updateCache));
 	}
 	
 	/**
@@ -498,7 +498,7 @@ public class SparseVector {
 	 * the vector length(norm of vector)
 	 * @return 长度的平方 - vector length
 	 */
-	public float length()
+	public double length()
 	{
 		return length(false);
 	}
@@ -512,7 +512,7 @@ public class SparseVector {
 	 * @return 夹角的余弦值，余弦值的范围在[-1,1]之间，值越趋近于1，代表两个向量的方向越接近；越趋近于-1，他们的方向越相反；接近于0，表示两个向量近乎于正交；
 	 * cosine similarity [https://en.wikipedia.org/wiki/Cosine_similarity]
 	 */
-	public float cosineSimilarity(SparseVector vector)
+	public double cosineSimilarity(SparseVector vector)
 	{
 		if (vector==null){
 			throw new RuntimeException("0向量无法计算余弦相似性");
@@ -528,7 +528,7 @@ public class SparseVector {
 	 * @return 维度相似度
 	 * Jaccard similarity [https://en.wikipedia.org/wiki/Jaccard_index]
 	 */
-	public float jaccardSimilarity(SparseVector vector)
+	public double jaccardSimilarity(SparseVector vector)
 	{
 		if (vector==null){
 			return 0;
@@ -539,13 +539,13 @@ public class SparseVector {
 		}
 		
 		int intersectCount = 0;
-		for (Map.Entry<String,Float> entry : divMap.entrySet()){
+		for (Map.Entry<String,Double> entry : divMap.entrySet()){
 			String divName = entry.getKey();
 			if (vector.divMap.containsKey(divName)){
 				intersectCount++;
 			}
 		}
-		return (float)intersectCount / (float)unionCount;
+		return (double)intersectCount / (double)unionCount;
 	}
 	
 	/**
@@ -555,7 +555,7 @@ public class SparseVector {
 	 * @return 最接近向量(点)的索引 (在vectors中的index) - the index of the minimal one 
 	 */
 	public int nearest(SparseVector[] vectors) {
-		float[] distances = new float[vectors.length];
+		double[] distances = new double[vectors.length];
 		
 		for (int i=0; i<vectors.length;i++){
 			distances[i] = squareOfDistance(vectors[i]);
@@ -565,11 +565,11 @@ public class SparseVector {
 	
 	//数组中最小值的索引
 	//the index of maximum value in the array 
-	private int minIndex(float[] array){
-		float minValue = array[0];
+	private int minIndex(double[] array){
+		double minValue = array[0];
 		int index = 0;
 		for (int i=1; i<array.length;i++){
-			float current = array[i];
+			double current = array[i];
 			if (current<minValue){
 				minValue = current;
 				index = i;
@@ -580,11 +580,11 @@ public class SparseVector {
 
 	//数组中最大值的索引
 	//the index of maximum value in the array
-	private int maxIndex(float[] array){
-		float maxValue = array[0];
+	private int maxIndex(double[] array){
+		double maxValue = array[0];
 		int index = 0;
 		for (int i=1; i<array.length;i++){
-			float current = array[i];
+			double current = array[i];
 			if (current>maxValue){
 				maxValue = current;
 				index = i;
@@ -601,7 +601,7 @@ public class SparseVector {
 	 * @return 最靠近向量(点)的索引 (在vectors中的index) - the index of minimal one 
 	 */
 	public int cloest(SparseVector[] vectors) {
-		float[] similarities = new float[vectors.length];
+		double[] similarities = new double[vectors.length];
 		
 		for (int i=0; i<vectors.length;i++){
 			SparseVector vector = vectors[i];
@@ -621,7 +621,7 @@ public class SparseVector {
 	 * @return 最大点积(点)的索引 (在vectors中的index) - the index of maximal one 
 	 */
 	public int maxDotProduction(SparseVector[] vectors) {
-		float[] productions = new float[vectors.length];
+		double[] productions = new double[vectors.length];
 		
 		for (int i=0; i<vectors.length;i++){
 			SparseVector vector = vectors[i];
@@ -648,10 +648,10 @@ public class SparseVector {
 	 * @param x
 	 * @return 
 	 */
-	public Entry<String,Float>[] topDivisions(int x)
+	public Entry<String,Double>[] topDivisions(int x)
 	{
 		@SuppressWarnings("unchecked")
-		Entry<String,Float>[] set = divMap.entrySet().stream().sorted((Entry<String,Float> w1, Entry<String,Float> w2)->Float.compare(w2.getValue(),w1.getValue())).toArray(Entry[]::new);
+		Entry<String,Double>[] set = divMap.entrySet().stream().sorted((Entry<String,Double> w1, Entry<String,Double> w2)->Double.compare(w2.getValue(),w1.getValue())).toArray(Entry[]::new);
 		if (x>=0 && x<set.length){
 			return Arrays.copyOfRange(set,0, x);
 		}else {
@@ -661,11 +661,11 @@ public class SparseVector {
 	
 	public String topDivString(int count)
 	{
-		Entry<String,Float>[] topEnties = topDivisions(count);
+		Entry<String,Double>[] topEnties = topDivisions(count);
 		StringBuilder builder= new StringBuilder("{");
 		for (int i=0; i<topEnties.length; i++){
-			Entry<String,Float> entry = topEnties[i];
-			//float weight = columnWeights[i];
+			Entry<String,Double> entry = topEnties[i];
+			//double weight = columnWeights[i];
 			builder.append(entry.getKey()).append(":").append(entry.getValue());
 			if (i<topEnties.length - 1){
 				builder.append(", ");
@@ -684,11 +684,11 @@ public class SparseVector {
 	 */
 	public String topDivNames(int x)
 	{
-		Entry<String,Float>[] topEnties = topDivisions(x);
+		Entry<String,Double>[] topEnties = topDivisions(x);
 		StringBuilder builder= new StringBuilder("{");
 		for (int i=0; i<topEnties.length; i++){
-			Entry<String,Float> entry = topEnties[i];
-			//float weight = columnWeights[i];
+			Entry<String,Double> entry = topEnties[i];
+			//double weight = columnWeights[i];
 			builder.append(entry.getKey()).append(":").append(entry.getValue());
 			if (i<topEnties.length - 1){
 				builder.append(", ");
@@ -742,14 +742,14 @@ public class SparseVector {
 	 */
 	public SparseVector normalize()
 	{
-		float len = this.length();
+		double len = this.length();
 		if (len==0){
 			throw new RuntimeException("Can not normalize a zero vector!");
 		}
 		return this.divide(len);
 	}
 	
-	public Set<Entry<String, Float>> getEntries()
+	public Set<Entry<String, Double>> getEntries()
 	{
 		return divMap.entrySet();
 	}
@@ -760,7 +760,7 @@ public class SparseVector {
 	 * @param divName 待删除的维度名 - the division to be removed
 	 * @return 删除的维度对应的值,如果没有这个维度,则返回null
 	 */
-	public Float removeDiv(String divName){
+	public Double removeDiv(String divName){
 		return divMap.remove(divName);
 	}
 }

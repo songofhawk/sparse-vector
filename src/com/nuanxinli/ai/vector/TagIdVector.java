@@ -32,7 +32,7 @@ public class TagIdVector extends SparseVector {
 	 * @param divNames 维度名称 - division names
 	 * @param divValues 维度值 - division values
 	 */
-	public TagIdVector(Long id, String[] divNames, float[] divValues) {
+	public TagIdVector(Long id, String[] divNames, double[] divValues) {
 		super(divNames, divValues);
 		this.id = id;
 	}
@@ -48,13 +48,13 @@ public class TagIdVector extends SparseVector {
 	 * - when dot products of the vector and all centers are less than this value, tag it with first center's tag(as the default tag) 
 	 * @return
 	 */
-	public static void tag(TagIdVector[] vectors, TagIdVector[] centers, Float invalidValue) {
+	public static void tag(TagIdVector[] vectors, TagIdVector[] centers, Double invalidValue) {
 		
 		for (int i=0; i<vectors.length;i++){
 			TagIdVector vector = vectors[i];
 			int index = vector.maxDotProduction(centers);
 			if (invalidValue!=null){
-				float production = vector.dotProduct(centers[index]);
+				double production = vector.dotProduct(centers[index]);
 				if (production<invalidValue){
 					logger.debug("向量和最近的中心点积为"+production+"，太小放弃，选用缺省值。"+vector);
 					index = 0;	//以第一个中心作为缺省值
